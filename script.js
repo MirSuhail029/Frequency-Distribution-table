@@ -68,7 +68,7 @@ const createRow = function () {
     tableBodyData.append(tableBodyInput);
   }
 };
-for (let i = 1; i < 3; i++) {
+for (let i = 1; i < 10; i++) {
   createRow();
 }
 // Creating the table footer
@@ -79,16 +79,19 @@ const tableFoot2 = document.createElement("td");
 const tableFoot3 = document.createElement("td");
 const tableFoot4 = document.createElement("td");
 const tableFoot5 = document.createElement("td");
+const tableFoot6 = document.createElement("td");
 tableFoot1.textContent = "Total";
 tableFoot2.textContent = "";
 tableFoot3.textContent = "";
 tableFoot4.textContent = "";
 tableFoot5.textContent = "";
+tableFoot6.textContent = "";
 tableFootRow.append(tableFoot1);
 tableFootRow.append(tableFoot2);
 tableFootRow.append(tableFoot3);
 tableFootRow.append(tableFoot4);
 tableFootRow.append(tableFoot5);
+tableFootRow.append(tableFoot6);
 tableFooter.append(tableFootRow);
 table.append(tableFooter);
 tableFoot1.setAttribute("class", "tableFoot");
@@ -96,16 +99,52 @@ tableFoot2.setAttribute("class", "tableFoot");
 tableFoot3.setAttribute("class", "tableFoot");
 tableFoot4.setAttribute("class", "tableFoot");
 tableFoot5.setAttribute("class", "tableFoot");
+tableFoot6.setAttribute("class", "tableFoot");
+
 // creating the calculate button
 const calculateButton = document.createElement("input");
 calculateButton.setAttribute("type", "submit");
 calculateButton.setAttribute("value", "Calculate");
 tableFooter.append(calculateButton);
 
-//funtion for calculating fi*xi, mean deviation and standard deviation
+// function for calculating mean deviation and standard deviation
+const row = tableBody.childNodes; // tr (table row)
+
+const calculateDeviations = function (mean) {
+  let meanDeviation = 0;
+  let standardDeviation = 0;
+  for (let i = 0; i < row.length; i++) {
+    const cell = row[i].childNodes; // td (table data)
+    let classXi = cell[0].firstChild.value;
+    const frequencyFi = cell[1].firstChild.value;
+    let midPoint = cell[2].firstChild;
+    let mDeviation = cell[4].firstChild;
+    let sDeviation = cell[5].firstChild;
+    if (classXi !== "" && frequencyFi !== "") {
+      if (midPoint.value === "") {
+        mDeviation.value = Math.abs(Number(classXi) - mean);
+        sDeviation.value = Math.pow(Number(classXi) - mean, 2);
+        meanDeviation += Number(mDeviation.value);
+        standardDeviation += Number(sDeviation.value);
+      } else {
+        mDeviation.value = Math.abs(Number(midPoint.value) - mean);
+        sDeviation.value = Math.pow(Number(midPoint.value) - mean, 2);
+        meanDeviation += Number(mDeviation.value);
+        standardDeviation += Number(sDeviation.value);
+      }
+    }
+  }
+  tableFoot5.textContent = meanDeviation;
+  standardDeviation = Math.sqrt(standardDeviation);
+  tableFoot6.textContent = standardDeviation;
+  console.log(meanDeviation);
+  console.log(standardDeviation);
+};
+
+//funtion for calculating fi*xi and mean
 const calculateFunc = function () {
-  let mean;
-  const row = tableBody.childNodes; // tr (table row)
+  let sum = 0; // combined value of all fi*xi
+  let tFrequency = 0; // total frequency
   for (let i = 0; i < row.length; i++) {
     const cell = row[i].childNodes; // td (table data)
     const classXi = cell[0].firstChild.value;
@@ -126,16 +165,25 @@ const calculateFunc = function () {
         console.log(upperClass, lowerClass);
         midPoint.value = (upperClass + lowerClass) / 2;
         fiXi.value = frequencyFi * midPoint.value;
+        sum += Number(fiXi.value);
+        tFrequency += Number(frequencyFi);
       } else {
         // calculate fi*xi for data without range
+        midPoint.value = "";
         fiXi.value = Number(classXi) * Number(frequencyFi);
+        sum += Number(fiXi.value);
+        tFrequency += Number(frequencyFi);
       }
     } else {
       console.log("Not available");
     }
   }
-  // const mDeviation = cell[3].firstChild.value;
-  // const sDeviation = cell[4].firstChild.value;
+  tableFoot2.textContent = tFrequency;
+  tableFoot4.textContent = sum;
+  // console.log(sum, tFrequency);
+  const mean = sum / tFrequency;
+  // console.log(mean);
+  calculateDeviations(mean);
 };
 
 // making the calculate button fire the calculate function
